@@ -14,6 +14,7 @@ def create_folder(PATH):
     Path(PATH).mkdir(parents=True, exist_ok=True)
 
 
+
 # Download Attachments 
 def download_attachments(path_name,sender_name,date_today,given_email):
 
@@ -43,9 +44,11 @@ def download_attachments(path_name,sender_name,date_today,given_email):
             messages = inbox.Items 
             print("Got messages in the folder")
             try:
+                isSenderFound = False
                 for message in list(messages):
 
                     if message.SenderEmailAddress == sender_name:
+                        isSenderFound = True
                         try:
                             s = message.sender
                             for attachment in message.Attachments:
@@ -53,6 +56,8 @@ def download_attachments(path_name,sender_name,date_today,given_email):
                                 print(f"attachment {attachment.FileName} from {s} saved")
                         except Exception as e:
                             print("Error when saving the attachment:" + str(e))
+                if isSenderFound == False: 
+                    print("Sorry there is no email found from your given sendr!")
             except Exception as e:
                 print("Error when processing emails messages:" + str(e))
     if isAccountFound == False: 
