@@ -24,10 +24,12 @@ def download_attachments(path_name,sender_name,date_today,given_email):
     print("Got the Mapi object")
 
     # Check Username 
+    isAccountFound = False
     for account in mapi.Accounts:
         email = account.DeliveryStore.DisplayName
 
         if email == given_email:
+            isAccountFound = True
             print("Email Matched with given email!")
 
             sender = sender_name.split("@")[0]
@@ -53,6 +55,10 @@ def download_attachments(path_name,sender_name,date_today,given_email):
                             print("Error when saving the attachment:" + str(e))
             except Exception as e:
                 print("Error when processing emails messages:" + str(e))
+    if isAccountFound == False: 
+        print("Sorry your account is not present in outlook!")  
+
+
 
 def main(): 
     email = "Please enter email here"
