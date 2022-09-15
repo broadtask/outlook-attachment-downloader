@@ -46,8 +46,9 @@ def download_attachments(path_name,sender_name,date_today,given_email):
             try:
                 isSenderFound = False
                 for message in list(messages):
+                    
 
-                    if message.SenderEmailAddress == sender_name:
+                    if message.SenderEmailAddress == sender_name and message.UnRead == True:
                         isSenderFound = True
                         try:
                             s = message.sender
@@ -57,12 +58,11 @@ def download_attachments(path_name,sender_name,date_today,given_email):
                         except Exception as e:
                             print("Error when saving the attachment:" + str(e))
                 if isSenderFound == False: 
-                    print("Sorry there is no email found from your given sendr!")
+                    print("Sorry there is no unread email attachments found from your given sender!")
             except Exception as e:
                 print("Error when processing emails messages:" + str(e))
     if isAccountFound == False: 
         print("Sorry your account is not present in outlook!")  
-
 
 
 def main(): 
