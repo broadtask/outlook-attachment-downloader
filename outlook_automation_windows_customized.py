@@ -1,3 +1,4 @@
+import sys
 import win32com.client as client 
 from datetime import datetime, timedelta
 import os
@@ -31,29 +32,33 @@ def download_attachments(path_name,date_today,status):
     total_messages = 0
     total_attachments = 0
 
-    outlook = client.Dispatch("Outlook.Application")
-    print("Called client dispatch")
+    try:
+        outlook = client.Dispatch("Outlook.Application")
+        print("Called client dispatch")
 
-    mapi = outlook.GetNamespace("MAPI")
-    print("Got the Mapi object")
+        mapi = outlook.GetNamespace("MAPI")
+        print("Got the Mapi object")
+    except: 
+        sys.exit("Mapi Object could not be created!")
 
-    # Check Username 
+    # Iterate through all accounts 
     for account in mapi.Accounts:
         total_accounts +=1
         email = account.DeliveryStore.DisplayName
         sender_name = email.split("@")[0]
         path_original_name = f"{path_name}/{sender_name}/{date_today}"
-
         all_folders = mapi.Folders(email).Folders
 
         for each_folder in all_folders:
-
-            if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds':
-                pass 
-            else:
-                total_folder +=1
-                messages = each_folder.Items
-                print("Got all the messages!")
+            try:
+                if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds':
+                    pass 
+                else:
+                    total_folder +=1
+                    messages = each_folder.Items
+                    print("Got all the messages!")
+            except Exception as e: 
+                sys.exit(e)
 
                 try:
                     for message in list(messages):
@@ -94,13 +99,21 @@ def download_attachments(path_name,date_today,status):
 
 
 def main(): 
-    path_name = r"Pathname"
+
+    path_name = input("Please enter the path: ")
     status = "all"
     date_time_today =  datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     date_today = f"{date_time_today}".split(" ")[0]
     path_name_modified = modify_path_name(path_name)
     start_time = time.time()
-    account_count,folders_count,messages_count,attachments_count = download_attachments(path_name_modified,date_today,status)
+    try:
+        account_count,folders_count,messages_count,attachments_count = download_attachments(path_name_modified,date_today,status)
+    except Exception as e:
+        sys.exit(e) 
+
     execution_time = f"{round(time.time() - start_time,2)}"
-    save_csv(path_name,[f'{date_time_today}',account_count,folders_count,messages_count,attachments_count,execution_time])
+    try:
+        save_csv(path_name,[f'{date_time_today}',account_count,folders_count,messages_count,attachments_count,execution_time])
+    except Exception as e: 
+        print(e)
 main()
