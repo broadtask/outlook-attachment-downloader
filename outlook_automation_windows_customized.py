@@ -50,15 +50,14 @@ def download_attachments(path_name,date_today,status):
         all_folders = mapi.Folders(email).Folders
 
         for each_folder in all_folders:
-            try:
+
                 if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds':
                     pass 
                 else:
                     total_folder +=1
                     messages = each_folder.Items
                     print("Got all the messages!")
-            except Exception as e: 
-                sys.exit(e)
+
 
                 try:
                     for message in list(messages):
