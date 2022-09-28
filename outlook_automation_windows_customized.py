@@ -39,11 +39,6 @@ def move_message(folders_object_data,date_and_time,message):
 
 
 
-
-
-    
-
-
 # Download Attachments 
 def download_attachments(path_name,date_today,status,date_and_time):
     total_accounts = 0
@@ -71,7 +66,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
 
         for each_folder in all_folders:
 
-                if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds':
+                if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds' or ":" in each_folder.name:
                     pass 
                 else:
                     path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
