@@ -24,9 +24,28 @@ def create_folder(PATH):
     Path(PATH).mkdir(parents=True, exist_ok=True)
 
 
+def move_message(folders_object_data,date_and_time,message):
+    date_time_text_split = f"{date_and_time}".split(":")
+    date_time_text_split.pop() 
+    date_and_time_text = ":".join(date_time_text_split)
+    
+    try: 
+        folders_object_data[date_and_time_text]
+    except: 
+        folders_object_data.Add(date_and_time_text)
+
+    message.Move(folders_object_data[date_and_time_text])
+
+
+
+
+
+
+    
+
 
 # Download Attachments 
-def download_attachments(path_name,date_today,status):
+def download_attachments(path_name,date_today,status,date_and_time):
     total_accounts = 0
     total_folder = 0 
     total_messages = 0
@@ -46,14 +65,16 @@ def download_attachments(path_name,date_today,status):
         total_accounts +=1
         email = account.DeliveryStore.DisplayName
         sender_name = email.split("@")[0]
-        path_original_name = f"{path_name}/{sender_name}/{date_today}"
+        
         all_folders = mapi.Folders(email).Folders
+
 
         for each_folder in all_folders:
 
                 if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds':
                     pass 
                 else:
+                    path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
                     total_folder +=1
                     messages = each_folder.Items
                     print("Got all the messages!")
@@ -75,6 +96,7 @@ def download_attachments(path_name,date_today,status):
                         else: 
                             pass
                         total_messages +=1
+                        
 
                         print("Downloading Attachaments...")
                         try:
@@ -86,6 +108,9 @@ def download_attachments(path_name,date_today,status):
                                 attachment.SaveASFile(os.path.join(path_original_name, attachment.FileName))
                                 print(f"attachment {attachment.FileName} from {s} saved")
                                 total_attachments +=1
+                                move_message(all_folders,date_and_time,message)
+                                
+
                         except Exception as e:
                             print("Error when saving the attachment:" + str(e))
                             print(path_original_name)
@@ -100,13 +125,19 @@ def download_attachments(path_name,date_today,status):
 def main(): 
 
     path_name = input("Please enter the path: ")
-    status = "all"
+    status_code = input("Please choose 1. Read Emails   2. Unread Email    3. Read and Unread all Emails\n> ")
+    if status_code == "1": 
+        status = "read"
+    elif status_code == "2": 
+        status = "unread"
+    else: 
+        status = "all"
     date_time_today =  datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     date_today = f"{date_time_today}".split(" ")[0]
     path_name_modified = modify_path_name(path_name)
     start_time = time.time()
     try:
-        account_count,folders_count,messages_count,attachments_count = download_attachments(path_name_modified,date_today,status)
+        account_count,folders_count,messages_count,attachments_count = download_attachments(path_name_modified,date_today,status,date_time_today)
     except Exception as e:
         sys.exit(e) 
 
