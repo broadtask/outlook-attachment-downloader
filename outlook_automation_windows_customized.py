@@ -67,7 +67,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
         for each_folder in all_folders:
 
                 if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds' or ":" in each_folder.name:
-                    pass 
+                    continue 
                 else:
                     path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
                     total_folder +=1
@@ -104,7 +104,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
                                 print(f"attachment {attachment.FileName} from {s} saved")
                                 total_attachments +=1
                                 move_message(all_folders,date_and_time,message)
-                                
+                                        
 
                         except Exception as e:
                             print("Error when saving the attachment:" + str(e))
