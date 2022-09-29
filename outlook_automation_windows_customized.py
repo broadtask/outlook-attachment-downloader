@@ -2,6 +2,7 @@ import sys
 import win32com.client as client 
 from datetime import datetime, timedelta
 import os
+from os import path
 import csv
 import time
 from pathlib import Path
@@ -22,6 +23,36 @@ def modify_path_name(path_name):
 # Create Desired Directory 
 def create_folder(PATH):
     Path(PATH).mkdir(parents=True, exist_ok=True)
+
+
+def check_similar_file(filename,pathname):
+    c = 1
+    new_filename = filename
+    while True:
+        
+        if path.exists(pathname+'\\'+ new_filename): 
+            new_filename = f"{filename} ({c})"
+            c = c+1
+            continue
+        else: 
+            break 
+    return new_filename
+            
+
+    # if path.exists(pathname+'\\'+ filename): 
+    #     file_name_split = filename.split(" ")
+    #     file_number_text = file_name_split[-1].strip()
+    #     print(f"\n{file_number_text}")
+    #     if "(" in file_number_text and ")" in file_number_text:
+    #         filename_number =file_number_text.split("(")[-1].split(")")[0].strip() 
+    #         filename_new = filename.replace(f"({filename_number})",f"({int(filename_number)+1})")
+    #         return filename_new
+    #     else: 
+    #         filename_new = f"{filename} (1)"
+    #         return filename_new
+    # else: 
+
+    #     return filename
 
 
 def move_message(folders_object_data,date_and_time,message):
@@ -75,43 +106,46 @@ def download_attachments(path_name,date_today,status,date_and_time):
                     print("Got all the messages!")
 
 
-                try:
-                    for message in list(messages):
-                        print("Checking read/unread status")
-                        if status.lower() == "read": 
-                            if message.UnRead == True: 
-                                continue 
-                            else:
-                                pass 
-                        elif status.lower() == 'unread': 
-                            if message.UnRead == True: 
-                                pass 
-                            else: 
-                                continue 
+                # try:
+                for message in list(messages):
+                    print("Checking read/unread status")
+                    if status.lower() == "read": 
+                        if message.UnRead == True: 
+                            continue 
+                        else:
+                            pass 
+                    elif status.lower() == 'unread': 
+                        if message.UnRead == True: 
+                            pass 
                         else: 
-                            pass
-                        total_messages +=1
-                        
+                            continue 
+                    else: 
+                        pass
+                    total_messages +=1
+                    
 
-                        print("Downloading Attachaments...")
-                        try:
-                            s = message.sender
-                            for idx,attachment in enumerate(message.Attachments):
-                                if idx==0: 
-                                    create_folder(path_original_name)
-                                    print(f"Folder created for account {sender_name}")
-                                attachment.SaveASFile(os.path.join(path_original_name, attachment.FileName))
-                                print(f"attachment {attachment.FileName} from {s} saved")
-                                total_attachments +=1
-                                move_message(all_folders,date_and_time,message)
+                    print("Downloading Attachaments...")
+                    # try:
+                    s = message.sender
+                    for idx,attachment in enumerate(message.Attachments):
+                        if idx==0: 
+                            create_folder(path_original_name)
+                            print(f"Folder created for account {sender_name}")
+                        filename_new = check_similar_file(attachment.FileName,path_original_name)
+                        print(f"Previous File name: ", attachment.FileName)
+                        print(f"New Filename: ", filename_new)
+                        attachment.SaveASFile(os.path.join(path_original_name, filename_new))
+                        print(f"attachment {attachment.FileName} from {s} saved")
+                        total_attachments +=1
+                        move_message(all_folders,date_and_time,message)
                                         
 
-                        except Exception as e:
-                            print("Error when saving the attachment:" + str(e))
-                            print(path_original_name)
+                #         except Exception as e:
+                #             print("Error when saving the attachment:" + str(e))
+                #             print(path_original_name)
                 
-                except Exception as e:
-                    print("Error when processing emails messages:" + str(e))
+                # except Exception as e:
+                #     print("Error when processing emails messages:" + str(e))
 
     return total_accounts,total_folder,total_messages,total_attachments       
 
