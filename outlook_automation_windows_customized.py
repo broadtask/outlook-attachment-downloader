@@ -127,7 +127,9 @@ def download_attachments(path_name,date_today,status,date_and_time):
                     print("Downloading Attachaments...")
                     # try:
                     s = message.sender
+                    isAttachmentExist = False
                     for idx,attachment in enumerate(message.Attachments):
+                        isAttachmentExist = True
                         if idx==0: 
                             create_folder(path_original_name)
                             print(f"Folder created for account {sender_name}")
@@ -137,6 +139,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
                         attachment.SaveASFile(os.path.join(path_original_name, filename_new))
                         print(f"attachment {attachment.FileName} from {s} saved")
                         total_attachments +=1
+                    if isAttachmentExist:
                         move_message(all_folders,date_and_time,message)
                                         
 
