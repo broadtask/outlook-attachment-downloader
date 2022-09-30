@@ -106,49 +106,49 @@ def download_attachments(path_name,date_today,status,date_and_time):
                     print("Got all the messages!")
 
 
-                # try:
-                for message in list(messages):
-                    print("Checking read/unread status")
-                    if status.lower() == "read": 
-                        if message.UnRead == True: 
-                            continue 
-                        else:
-                            pass 
-                    elif status.lower() == 'unread': 
-                        if message.UnRead == True: 
-                            pass 
+                try:
+                    for message in list(messages):
+                        print("Checking read/unread status")
+                        if status.lower() == "read": 
+                            if message.UnRead == True: 
+                                continue 
+                            else:
+                                pass 
+                        elif status.lower() == 'unread': 
+                            if message.UnRead == True: 
+                                pass 
+                            else: 
+                                continue 
                         else: 
-                            continue 
-                    else: 
-                        pass
-                    total_messages +=1
-                    
+                            pass
+                        total_messages +=1
+                        
 
-                    print("Downloading Attachaments...")
-                    # try:
-                    s = message.sender
-                    isAttachmentExist = False
-                    for idx,attachment in enumerate(message.Attachments):
-                        isAttachmentExist = True
-                        if idx==0: 
-                            create_folder(path_original_name)
-                            print(f"Folder created for account {sender_name}")
-                        filename_new = check_similar_file(attachment.FileName,path_original_name)
-                        print(f"Previous File name: ", attachment.FileName)
-                        print(f"New Filename: ", filename_new)
-                        attachment.SaveASFile(os.path.join(path_original_name, filename_new))
-                        print(f"attachment {attachment.FileName} from {s} saved")
-                        total_attachments +=1
-                    if isAttachmentExist:
-                        move_message(all_folders,date_and_time,message)
-                                        
+                        print("Downloading Attachaments...")
+                        try:
+                            s = message.sender
+                            isAttachmentExist = False
+                            for idx,attachment in enumerate(message.Attachments):
+                                isAttachmentExist = True
+                                if idx==0: 
+                                    create_folder(path_original_name)
+                                    print(f"Folder created for account {sender_name}")
+                                filename_new = check_similar_file(attachment.FileName,path_original_name)
+                                print(f"Previous File name: ", attachment.FileName)
+                                print(f"New Filename: ", filename_new)
+                                attachment.SaveASFile(os.path.join(path_original_name, filename_new))
+                                print(f"attachment {attachment.FileName} from {s} saved")
+                                total_attachments +=1
+                            if isAttachmentExist:
+                                move_message(all_folders,date_and_time,message)
+                                                
 
-                #         except Exception as e:
-                #             print("Error when saving the attachment:" + str(e))
-                #             print(path_original_name)
+                        except Exception as e:
+                            print("Error when saving the attachment:" + str(e))
+                            print(path_original_name)
                 
-                # except Exception as e:
-                #     print("Error when processing emails messages:" + str(e))
+                except Exception as e:
+                    print("Error when processing emails messages:" + str(e))
 
     return total_accounts,total_folder,total_messages,total_attachments       
 
