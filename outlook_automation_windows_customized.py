@@ -8,10 +8,14 @@ import time
 from pathlib import Path
 
 
-def save_csv(path,data_list): 
-    with open(f'{path}\\log.csv', "a", newline='', encoding='utf-8-sig') as fp:
+def save_csv(data_list,date_and_time): 
+
+    date_time_text = modify_date_time(date_and_time).replace(":","_")
+    print(date_time_text)
+    with open(f'./log_{date_time_text}.csv', "a", newline='', encoding='utf-8-sig') as fp:
         wr = csv.writer(fp, dialect='excel')
         wr.writerow(data_list)
+
 
 
 # Remove backslash
@@ -19,6 +23,13 @@ def modify_path_name(path_name):
     mod_path_name = path_name.replace('\\',r"/")
     print("The path name is modified successfully!")
     return mod_path_name
+
+def modify_date_time(date_and_time): 
+    date_time_text_split = f"{date_and_time}".split(":")
+    date_time_text_split.pop() 
+    date_and_time_text = ":".join(date_time_text_split)
+    return date_and_time_text
+
 
 # Create Desired Directory 
 def create_folder(PATH):
@@ -39,26 +50,8 @@ def check_similar_file(filename,pathname):
     return new_filename
             
 
-    # if path.exists(pathname+'\\'+ filename): 
-    #     file_name_split = filename.split(" ")
-    #     file_number_text = file_name_split[-1].strip()
-    #     print(f"\n{file_number_text}")
-    #     if "(" in file_number_text and ")" in file_number_text:
-    #         filename_number =file_number_text.split("(")[-1].split(")")[0].strip() 
-    #         filename_new = filename.replace(f"({filename_number})",f"({int(filename_number)+1})")
-    #         return filename_new
-    #     else: 
-    #         filename_new = f"{filename} (1)"
-    #         return filename_new
-    # else: 
-
-    #     return filename
-
-
 def move_message(folders_object_data,date_and_time,message):
-    date_time_text_split = f"{date_and_time}".split(":")
-    date_time_text_split.pop() 
-    date_and_time_text = ":".join(date_time_text_split)
+    date_and_time_text = modify_date_time(date_and_time)
     
     try: 
         folders_object_data[date_and_time_text]
@@ -72,10 +65,9 @@ def move_message(folders_object_data,date_and_time,message):
 
 # Download Attachments 
 def download_attachments(path_name,date_today,status,date_and_time):
-    total_accounts = 0
-    total_folder = 0 
-    total_messages = 0
-    total_attachments = 0
+
+
+
 
     try:
         outlook = client.Dispatch("Outlook.Application")
@@ -88,7 +80,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
 
     # Iterate through all accounts 
     for account in mapi.Accounts:
-        total_accounts +=1
+
         email = account.DeliveryStore.DisplayName
         sender_name = email.split("@")[0]
         
@@ -96,18 +88,19 @@ def download_attachments(path_name,date_today,status,date_and_time):
 
 
         for each_folder in all_folders:
+                total_messages = 0
+                total_attachments = 0
 
-                if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds' or ":" in each_folder.name:
+                if each_folder.name == 'Inbox' or each_folder.name == 'Outbox' or each_folder.name == 'Drafts' or each_folder.name == '[Gmail]' or each_folder.name == 'RSS Feeds' or ":" in each_folder.name or "calendar" in each_folder.name.lower() or "this computer only" in each_folder.name.lower():
                     continue 
                 else:
                     path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
-                    total_folder +=1
                     messages = each_folder.Items
                     print("Got all the messages!")
-
-
+                    
                 try:
                     for message in list(messages):
+                        total_messages+=1
                         print("Checking read/unread status")
                         if status.lower() == "read": 
                             if message.UnRead == True: 
@@ -146,11 +139,12 @@ def download_attachments(path_name,date_today,status,date_and_time):
                         except Exception as e:
                             print("Error when saving the attachment:" + str(e))
                             print(path_original_name)
-                
+                    
                 except Exception as e:
                     print("Error when processing emails messages:" + str(e))
+                save_csv([each_folder.name,total_messages,total_attachments],date_and_time)
 
-    return total_accounts,total_folder,total_messages,total_attachments       
+    return total_messages,total_attachments       
 
 
 
@@ -167,15 +161,9 @@ def main():
     date_time_today =  datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     date_today = f"{date_time_today}".split(" ")[0]
     path_name_modified = modify_path_name(path_name)
-    start_time = time.time()
+
     try:
-        account_count,folders_count,messages_count,attachments_count = download_attachments(path_name_modified,date_today,status,date_time_today)
+        download_attachments(path_name_modified,date_today,status,date_time_today)
     except Exception as e:
         sys.exit(e) 
-
-    execution_time = f"{round(time.time() - start_time,2)}"
-    try:
-        save_csv(path_name,[f'{date_time_today}',account_count,folders_count,messages_count,attachments_count,execution_time])
-    except Exception as e: 
-        print(e)
 main()
