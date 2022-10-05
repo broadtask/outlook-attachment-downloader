@@ -150,8 +150,8 @@ def download_attachments(path_name,date_today,status,date_and_time):
 
 def main(): 
 
-    path_name = input("Please enter the path: ")
-    status_code = input("Please choose 1. Read Emails   2. Unread Email    3. Read and Unread all Emails\n> ")
+    path_name = input("Please enter download folder path: ")
+    status_code = input("Please choose\n1 for Read Emails\2 for Unread Emails\n3 for Read and Unread all Emails\n> ")
     if status_code == "1": 
         status = "read"
     elif status_code == "2": 
