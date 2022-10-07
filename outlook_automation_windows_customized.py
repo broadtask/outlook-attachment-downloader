@@ -6,6 +6,21 @@ from os import path
 import csv
 import time
 from pathlib import Path
+import pandas as pd
+MAIN_LIST = []
+
+
+def df_to_excel_main_list(data_list,date_and_time):
+    filename = modify_date_time(date_and_time).replace(":","_")
+    my_python_list = data_list
+    df = pd.DataFrame(columns=['Date Time','Folder Names','Message Count','Attachment Count'], data=my_python_list)
+    # df = pd.read_csv (f"{filename}.csv")
+    writer = pd.ExcelWriter(f'log_{filename}.xlsx', engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Sheet1',index = None)
+    workbook  = writer.book
+    worksheet = writer.sheets['Sheet1']
+    wraping = workbook.add_format({'text_wrap': True})
+    writer.save()
 
 
 def save_csv(data_list,date_and_time): 
@@ -86,7 +101,7 @@ def download_attachments(path_name,date_today,status,date_and_time):
         
         all_folders = mapi.Folders(email).Folders
 
-
+        
         for each_folder in all_folders:
                 total_messages = 0
                 total_attachments = 0
@@ -142,7 +157,10 @@ def download_attachments(path_name,date_today,status,date_and_time):
                     
                 except Exception as e:
                     print("Error when processing emails messages:" + str(e))
-                save_csv([each_folder.name,total_messages,total_attachments],date_and_time)
+                MAIN_LIST.append([date_and_time,each_folder.name,total_messages,total_attachments])
+                # print([date_and_time,each_folder.name,total_messages,total_attachments])
+                df_to_excel_main_list(MAIN_LIST,date_and_time)
+                # save_csv([each_folder.name,total_messages,total_attachments],date_and_time)
 
     return total_messages,total_attachments       
 
