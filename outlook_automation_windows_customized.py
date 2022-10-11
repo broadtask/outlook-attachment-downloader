@@ -61,12 +61,35 @@ def create_folder(path_name):
 
 def check_similar_file(filename, pathname):
     """Check similar file in the given directory"""
-    count_data = 1
-    new_filename = filename
-    while True:
 
+    new_filename = filename
+    filename_split = filename.split(".")
+    file_format = filename_split[-1]
+    filename_split.pop()
+    filename_without_format = ".".join(filename_split)
+    if "(" in filename_without_format and ")" in filename_without_format:
+        file_number = filename_without_format.split("(")[1].split(")")[
+            0].strip()
+        try:
+            count_data = int(file_number)
+        except:  # pylint: disable=W0702
+            count_data = 1
+    else:
+        count_data = 1
+    print(filename_without_format, count_data)
+    while True:
         if path.exists(pathname+'\\' + new_filename):
-            new_filename = f"{filename} ({count_data})"
+            # new_filename = f"{filename} ({count_data})"
+            if (count_data == 1 and
+                "(" not in filename_without_format and
+                    ")" not in filename_without_format):
+                new_filename = f"{filename_without_format} ({count_data}).{file_format}"
+            else:
+                count_text = f"({count_data})"
+                filename_prev = f'{filename_without_format.replace(count_text,"")}'.strip(
+                )
+
+                new_filename = f"{filename_prev} ({count_data+1}).{file_format}"
             count_data = count_data+1
             continue
 
@@ -87,7 +110,7 @@ def move_message(folders_object_data, date_and_time, message):
 
 # pylint: disable=R1702
 
-def download_attachments(path_name, status, date_and_time):  # pylint: disable=R0914
+def download_attachments(path_name, date_today, status, date_and_time):  # pylint: disable=R0914
     # pylint: disable=R0915
     """Attachment downloading"""
     avoidable_folders = ['Inbox', 'Outbox',
@@ -112,6 +135,8 @@ def download_attachments(path_name, status, date_and_time):  # pylint: disable=R
             first_email = ""
             last_email = ""
             unprocessed_email = 0
+            attachment_count = 0
+            email_with_invoice = 0
 
             if (each_folder.name in avoidable_folders or
                 ":" in each_folder.name or
@@ -160,8 +185,13 @@ def download_attachments(path_name, status, date_and_time):  # pylint: disable=R
                     try:
 
                         is_attachment_exist = False
+                        is_pdf_exist = False
                         for idx, attachment in enumerate(message.Attachments):
                             is_attachment_exist = True
+                            if 'pdf' in attachment.FileName:
+                                attachment_count = attachment_count+1
+                                is_pdf_exist = True
+
                             if idx == 0:
 
                                 create_folder(path_original_name)
@@ -178,6 +208,8 @@ def download_attachments(path_name, status, date_and_time):  # pylint: disable=R
 
                         if is_attachment_exist:
                             move_message(all_folders, date_and_time, message)
+                        if is_pdf_exist:
+                            email_with_invoice = email_with_invoice+1
 
                     except Exception as exception_error:  # pylint: disable=W0703
                         print("Error when saving the attachment:" +
@@ -187,11 +219,18 @@ def download_attachments(path_name, status, date_and_time):  # pylint: disable=R
             except Exception as exception_error:  # pylint: disable=W0703
                 print("Error when processing emails messages:" +
                       str(exception_error))
+
             if first_email == "" and last_email == "":
                 pass
             else:
-                data_list = [first_email,
-                             last_email, unprocessed_email]
+                data_list = [each_folder.name,
+                             path_original_name,
+                             email_with_invoice,
+                             attachment_count,
+                             date_today,
+                             first_email,
+                             last_email,
+                             unprocessed_email]
                 save_csv_or_excel(date_and_time, data_list)
 
             # MAIN_LIST.append([date_and_time, each_folder.name,
@@ -205,7 +244,9 @@ def download_attachments(path_name, status, date_and_time):  # pylint: disable=R
 def main():
     """Main Function"""
 
-    path_name = input("Please enter download folder path: ")
+    # path_name = input("Please enter download folder path: ")
+    path_name = r"C:\BOT\TAX_Tech_AvinashKaur\OutlookBot_V1\Data\Output"
+    # path_name = r"E:\Python\brend\job_2\Data"
     status_code = input(
         "Please choose\n1 for Read Emails\2 for Unread Emails\n3 for Read and Unread all Emails\n> "
     )
@@ -216,13 +257,19 @@ def main():
     else:
         status = "all"
     date_time_today = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    # date_today = f"{date_time_today}".split(" ")[0]
+    date_today = f"{date_time_today}".split(" ")[0]
     path_name_modified = modify_path_name(path_name)
     save_csv_or_excel(date_time_today, [
-                      'First Email Details', 'Last Email Details', 'Unprocessed Emails'])
+                      'Folder Name',
+                      'Output Folder',
+                      'Total Downloaded Invoices',
+                      'Total Email with Invoices',
+                      'First Email Details',
+                      'Last Email Details',
+                      'Unprocessed Emails'])
 
     try:
-        download_attachments(path_name_modified,
+        download_attachments(path_name_modified, date_today,
                              status, date_time_today)
     except Exception as exception_message:  # pylint: disable=W0703
         sys.exit(exception_message)
