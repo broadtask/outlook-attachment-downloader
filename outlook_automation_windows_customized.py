@@ -6,7 +6,24 @@ from os import path
 from pathlib import Path
 import pandas as pd
 from win32com import client
-MAIN_LIST = []
+# MAIN_LIST = []
+
+
+def save_csv_or_excel(date_and_time, data_list):
+    '''Save Data to CSV'''
+
+    filename = modify_date_time(date_and_time).replace(":", "_")
+    try:
+        pd.DataFrame([data_list]).to_csv(f'{filename}.csv', sep=',', encoding='utf-8',
+                                         doublequote=False, index=False, mode="a", header=False)
+    except:  # pylint: disable=W0702
+        print(f"Error in saving {data_list}")
+
+
+def convert_date(time_stamp):
+    '''Convert the date and time format'''
+    return f'''{datetime.strptime(f"{time_stamp}".split("+")
+                             [0], '%Y-%m-%d %H:%M:%S').strftime("%m/%d/%Y %H:%M:%S")}'''
 
 
 def df_to_excel_main_list(data_list, date_and_time):
@@ -70,7 +87,7 @@ def move_message(folders_object_data, date_and_time, message):
 
 # pylint: disable=R1702
 
-def download_attachments(path_name, date_today, status, date_and_time):  # pylint: disable=R0914
+def download_attachments(path_name, status, date_and_time):  # pylint: disable=R0914
     # pylint: disable=R0915
     """Attachment downloading"""
     avoidable_folders = ['Inbox', 'Outbox',
@@ -83,6 +100,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
         print("Got the Mapi object")
     except:  # pylint: disable=W0702
         sys.exit("Mapi Object could not be created!")
+
     # Iterate through all accounts
     for account in mapi.Accounts:
         email = account.DeliveryStore.DisplayName
@@ -91,8 +109,9 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
         all_folders = mapi.Folders(email).Folders
 
         for each_folder in all_folders:
-            total_messages = 0
-            total_attachments = 0
+            first_email = ""
+            last_email = ""
+            unprocessed_email = 0
 
             if (each_folder.name in avoidable_folders or
                 ":" in each_folder.name or
@@ -100,13 +119,30 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                     "this computer only" in each_folder.name.lower()):
                 continue
 
-            path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
+            path_original_name = f"{path_name}/{each_folder}"
+            # path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
             messages = each_folder.Items
+            messages.Sort("[ReceivedTime]", True)
             print("Got all the messages!")
 
             try:
-                for message in list(messages):
-                    total_messages += 1
+                last_index = len(list(messages))-1
+                for indx_msg, message in enumerate(list(messages)):
+
+                    if len(message.Attachments) == 0:
+                        unprocessed_email += 1
+
+                    if indx_msg == 0:
+                        first_email_recieved_date = convert_date(
+                            message.ReceivedTime)
+                        first_email_subject = message.Subject
+                        first_email = f"{first_email_recieved_date} {first_email_subject}"
+                    if indx_msg == last_index:
+                        last_email_recieved_date = convert_date(
+                            message.ReceivedTime)
+                        last_email_subject = message.Subject
+                        last_email = f"{last_email_recieved_date} {last_email_subject}"
+
                     print("Checking read/unread status")
                     if status.lower() == "read":
                         if message.UnRead is True:
@@ -119,7 +155,6 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                             continue
                     else:
                         pass
-                    total_messages += 1
 
                     print("Downloading Attachaments...")
                     try:
@@ -128,6 +163,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                         for idx, attachment in enumerate(message.Attachments):
                             is_attachment_exist = True
                             if idx == 0:
+
                                 create_folder(path_original_name)
                                 print(
                                     f"Folder created for account {sender_name}")
@@ -139,7 +175,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                                 path_original_name, filename_new))
                             print(
                                 f"attachment {attachment.FileName} from {message.sender} saved")
-                            total_attachments += 1
+
                         if is_attachment_exist:
                             move_message(all_folders, date_and_time, message)
 
@@ -151,12 +187,19 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
             except Exception as exception_error:  # pylint: disable=W0703
                 print("Error when processing emails messages:" +
                       str(exception_error))
-            MAIN_LIST.append([date_and_time, each_folder.name,
-                             total_messages, total_attachments])
+            if first_email == "" and last_email == "":
+                pass
+            else:
+                data_list = [first_email,
+                             last_email, unprocessed_email]
+                save_csv_or_excel(date_and_time, data_list)
 
-            df_to_excel_main_list(MAIN_LIST, date_and_time)
+            # MAIN_LIST.append([date_and_time, each_folder.name,
+            #                  total_messages, total_attachments])
 
-    return total_messages, total_attachments
+            # df_to_excel_main_list(MAIN_LIST, date_and_time)
+
+    # return None
 
 
 def main():
@@ -173,11 +216,13 @@ def main():
     else:
         status = "all"
     date_time_today = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    date_today = f"{date_time_today}".split(" ")[0]
+    # date_today = f"{date_time_today}".split(" ")[0]
     path_name_modified = modify_path_name(path_name)
+    save_csv_or_excel(date_time_today, [
+                      'First Email Details', 'Last Email Details', 'Unprocessed Emails'])
 
     try:
-        download_attachments(path_name_modified, date_today,
+        download_attachments(path_name_modified,
                              status, date_time_today)
     except Exception as exception_message:  # pylint: disable=W0703
         sys.exit(exception_message)
