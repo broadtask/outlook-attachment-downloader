@@ -147,7 +147,10 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
             path_original_name = f"{path_name}/{each_folder}"
             # path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
             messages = each_folder.Items
-            messages.Sort("[ReceivedTime]", True)
+            try:
+                messages.Sort("[ReceivedTime]", True)
+            except:  # pylint: disable=W0702
+                continue
             print("Got all the messages!")
 
             try:
@@ -156,17 +159,23 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
 
                     if len(message.Attachments) == 0:
                         unprocessed_email += 1
+                    try:
+                        if indx_msg == 0:
+                            first_email_recieved_date = convert_date(
+                                message.ReceivedTime)
+                            first_email_subject = message.Subject
+                            first_email = f"{first_email_recieved_date} {first_email_subject}"
+                    except:  # pylint: disable=W0702
+                        continue
 
-                    if indx_msg == 0:
-                        first_email_recieved_date = convert_date(
-                            message.ReceivedTime)
-                        first_email_subject = message.Subject
-                        first_email = f"{first_email_recieved_date} {first_email_subject}"
-                    if indx_msg == last_index:
-                        last_email_recieved_date = convert_date(
-                            message.ReceivedTime)
-                        last_email_subject = message.Subject
-                        last_email = f"{last_email_recieved_date} {last_email_subject}"
+                    try:
+                        if indx_msg == last_index:
+                            last_email_recieved_date = convert_date(
+                                message.ReceivedTime)
+                            last_email_subject = message.Subject
+                            last_email = f"{last_email_recieved_date} {last_email_subject}"
+                    except:  # pylint: disable=W0702
+                        continue
 
                     print("Checking read/unread status")
                     if status.lower() == "read":
