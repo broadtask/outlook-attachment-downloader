@@ -245,8 +245,8 @@ def main():
     """Main Function"""
 
     # path_name = input("Please enter download folder path: ")
-    path_name = r"C:\BOT\TAX_Tech_AvinashKaur\OutlookBot_V1\Data\Output"
-    # path_name = r"E:\Python\brend\job_2\Data"
+    # path_name = r"C:\BOT\TAX_Tech_AvinashKaur\OutlookBot_V1\Data\Output"
+    path_name = r"E:\Python\brend\job_2\Data"
     status_code = input(
         "Please choose\n1 for Read Emails\2 for Unread Emails\n3 for Read and Unread all Emails\n> "
     )
@@ -262,8 +262,9 @@ def main():
     save_csv_or_excel(date_time_today, [
                       'Folder Name',
                       'Output Folder',
-                      'Total Downloaded Invoices',
                       'Total Email with Invoices',
+                      'Total Downloaded Invoices',
+                      'Execution Date',
                       'First Email Details',
                       'Last Email Details',
                       'Unprocessed Emails'])
