@@ -127,7 +127,6 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
     # Iterate through all accounts
     for account in mapi.Accounts:
         email = account.DeliveryStore.DisplayName
-        sender_name = email.split("@")[0]
 
         all_folders = mapi.Folders(email).Folders
 
@@ -204,8 +203,6 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                             if idx == 0:
 
                                 create_folder(path_original_name)
-                                print(
-                                    f"Folder created for account {sender_name}")
                             filename_new = check_similar_file(
                                 attachment.FileName, path_original_name)
                             print("Previous File name: ", attachment.FileName)
@@ -213,7 +210,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                             attachment.SaveASFile(os.path.join(
                                 path_original_name, filename_new))
                             print(
-                                f"attachment {attachment.FileName} from {message.sender} saved")
+                                f"attachment {attachment.FileName} saved")
 
                         if is_attachment_exist:
                             move_message(all_folders, date_and_time, message)
