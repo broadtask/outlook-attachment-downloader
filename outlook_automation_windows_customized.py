@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 from win32com import client
 # MAIN_LIST = []
+# pylint: disable=W0702
 
 
 def save_csv_or_excel(date_and_time, data_list):
@@ -158,23 +159,24 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
 
                     if len(message.Attachments) == 0:
                         unprocessed_email += 1
-                    try:
-                        if indx_msg == 0:
+
+                    if indx_msg == 0:
+                        try:
                             first_email_recieved_date = convert_date(
                                 message.ReceivedTime)
-                            first_email_subject = message.Subject
-                            first_email = f"{first_email_recieved_date} {first_email_subject}"
-                    except:  # pylint: disable=W0702
-                        continue
+                        except:  # pylint: disable=W0702
+                            first_email_recieved_date = "Date:N/A"
+                        first_email_subject = message.Subject
+                        first_email = f"{first_email_recieved_date} {first_email_subject}"
 
-                    try:
-                        if indx_msg == last_index:
+                    if indx_msg == last_index:
+                        try:
                             last_email_recieved_date = convert_date(
                                 message.ReceivedTime)
-                            last_email_subject = message.Subject
-                            last_email = f"{last_email_recieved_date} {last_email_subject}"
-                    except:  # pylint: disable=W0702
-                        continue
+                        except:
+                            last_email_recieved_date = "Date:N/A"
+                        last_email_subject = message.Subject
+                        last_email = f"{last_email_recieved_date} {last_email_subject}"
 
                     #print("Checking read/unread status")
                     if status.lower() == "read":
@@ -195,7 +197,10 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                         is_attachment_exist = False
                         is_pdf_exist = False
                         for idx, attachment in enumerate(message.Attachments):
+                            if attachment.DisplayName == "":
+                                continue
                             is_attachment_exist = True
+
                             if 'pdf' in attachment.FileName:
                                 attachment_count = attachment_count+1
                                 is_pdf_exist = True
@@ -213,7 +218,10 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                                 f"attachment {attachment.FileName} saved")
 
                         if is_attachment_exist:
-                            move_message(all_folders, date_and_time, message)
+
+                            move_message(
+                                all_folders, date_and_time, message)
+
                         if is_pdf_exist:
                             email_with_invoice = email_with_invoice+1
 
@@ -252,7 +260,7 @@ def main():
 
     # path_name = input("Please enter download folder path: ")
     # path_name = r"C:\BOT\TAX_Tech_AvinashKaur\OutlookBot_V1\Data\Output"
-    path_name = r"E:\Python\brend\job_2\Data"
+    path_name = r"E:\Python\brend\job_2\Data\output"
     status_code = input(
         "Please choose\n1 for Read Emails\2 for Unread Emails\n3 for Read and Unread all Emails\n> "
     )
@@ -275,11 +283,11 @@ def main():
                       'Last Email Details',
                       'Unprocessed Emails'])
 
-    try:
-        download_attachments(path_name_modified, date_today,
-                             status, date_time_today)
-    except Exception as exception_message:  # pylint: disable=W0703
-        sys.exit(exception_message)
+    # try:
+    download_attachments(path_name_modified, date_today,
+                         status, date_time_today)
+    # except Exception as exception_message:  # pylint: disable=W0703
+    #     sys.exit(exception_message)
 
 
 if __name__ == '__main__':
