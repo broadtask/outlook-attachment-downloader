@@ -42,7 +42,7 @@ def df_to_excel_main_list(data_list, date_and_time):
 def modify_path_name(path_name):
     """Remove backslash"""
     mod_path_name = path_name.replace('\\', r"/")
-    print("The path name is modified successfully!")
+    #print("The path name is modified successfully!")
     return mod_path_name
 
 
@@ -76,7 +76,7 @@ def check_similar_file(filename, pathname):
             count_data = 1
     else:
         count_data = 1
-    print(filename_without_format, count_data)
+    #print(filename_without_format, count_data)
     while True:
         if path.exists(pathname+'\\' + new_filename):
             # new_filename = f"{filename} ({count_data})"
@@ -117,10 +117,10 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                          'Drafts', '[Gmail]', 'RSS Feeds', '']
     try:
         outlook = client.Dispatch("Outlook.Application")
-        print("Called client dispatch")
+        #print("Called client dispatch")
 
         mapi = outlook.GetNamespace("MAPI")
-        print("Got the Mapi object")
+        #print("Got the Mapi object")
     except:  # pylint: disable=W0702
         sys.exit("Mapi Object could not be created!")
 
@@ -150,7 +150,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                 messages.Sort("[ReceivedTime]", True)
             except:  # pylint: disable=W0702
                 continue
-            print("Got all the messages!")
+            #print("Got all the messages!")
 
             try:
                 last_index = len(list(messages))-1
@@ -176,7 +176,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                     except:  # pylint: disable=W0702
                         continue
 
-                    print("Checking read/unread status")
+                    #print("Checking read/unread status")
                     if status.lower() == "read":
                         if message.UnRead is True:
                             continue
@@ -189,7 +189,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                     else:
                         pass
 
-                    print("Downloading Attachaments...")
+                    #print("Downloading Attachments...")
                     try:
 
                         is_attachment_exist = False
