@@ -206,16 +206,19 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                                 is_pdf_exist = True
 
                             if idx == 0:
-
                                 create_folder(path_original_name)
-                            filename_new = check_similar_file(
-                                attachment.FileName, path_original_name)
-                            print("Previous File name: ", attachment.FileName)
-                            print("New Filename: ", filename_new)
-                            attachment.SaveASFile(os.path.join(
-                                path_original_name, filename_new))
-                            print(
-                                f"attachment {attachment.FileName} saved")
+
+                            if 'pdf' in attachment.FileName:
+                                filename_new = check_similar_file(
+                                    attachment.FileName, path_original_name)
+
+                                print("Previous File name: ",
+                                      attachment.FileName)
+                                print("New Filename: ", filename_new)
+                                attachment.SaveASFile(os.path.join(
+                                    path_original_name, filename_new))
+                                print(
+                                    f"attachment {attachment.FileName} saved")
 
                         if is_attachment_exist:
 
@@ -260,7 +263,7 @@ def main():
 
     # path_name = input("Please enter download folder path: ")
     # path_name = r"C:\BOT\TAX_Tech_AvinashKaur\OutlookBot_V1\Data\Output"
-    path_name = r"E:\Python\brend\job_2\Data\output"
+    path_name = r"E:\Python\brend\job_2\Data"
     status_code = input(
         "Please choose\n1 for Read Emails\2 for Unread Emails\n3 for Read and Unread all Emails\n> "
     )
