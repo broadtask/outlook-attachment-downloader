@@ -23,8 +23,12 @@ def save_csv_or_excel(date_and_time, data_list):
 
 def convert_date(time_stamp):
     '''Convert the date and time format'''
-    return f'''{datetime.strptime(f"{time_stamp}".split("+")
-                             [0], '%Y-%m-%d %H:%M:%S').strftime("%m/%d/%Y %H:%M:%S")}'''
+    try:
+        return f'''{datetime.strptime(f"{time_stamp}".split("+")
+                                [0], '%Y-%m-%d %H:%M:%S.%f').strftime("%m/%d/%Y %H:%M:%S")}'''
+    except:  # pylint: disable=W0702
+        return f'''{datetime.strptime(f"{time_stamp}".split("+")
+                                [0], '%Y-%m-%d %H:%M:%S').strftime("%m/%d/%Y %H:%M:%S")}'''
 
 
 def df_to_excel_main_list(data_list, date_and_time):
@@ -165,15 +169,19 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                             first_email_recieved_date = convert_date(
                                 message.ReceivedTime)
                         except:  # pylint: disable=W0702
+
                             first_email_recieved_date = "Date:N/A"
                         first_email_subject = message.Subject
                         first_email = f"{first_email_recieved_date} {first_email_subject}"
 
                     if indx_msg == last_index:
                         try:
+
                             last_email_recieved_date = convert_date(
                                 message.ReceivedTime)
-                        except:
+
+                        except:  # pylint: disable=W0702
+
                             last_email_recieved_date = "Date:N/A"
                         last_email_subject = message.Subject
                         last_email = f"{last_email_recieved_date} {last_email_subject}"
