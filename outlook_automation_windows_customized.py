@@ -138,7 +138,8 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
         for each_folder in all_folders:
             first_email = ""
             last_email = ""
-            unprocessed_email = 0
+            unprocessed_email_read = 0
+            unprocessed_email_unread = 0
             attachment_count = 0
             email_with_invoice = 0
 
@@ -151,6 +152,7 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
             path_original_name = f"{path_name}/{each_folder}"
             # path_original_name = f"{path_name}/{sender_name}/{date_today}/{each_folder}"
             messages = each_folder.Items
+
             try:
                 messages.Sort("[ReceivedTime]", True)
             except:  # pylint: disable=W0702
@@ -159,10 +161,18 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
 
             try:
                 last_index = len(list(messages))-1
-                for indx_msg, message in enumerate(list(messages)):
 
-                    if len(message.Attachments) == 0:
-                        unprocessed_email += 1
+                for indx_msg, message in enumerate(list(messages)):
+                    receiver_list = []
+                    for recip in message.recipients:
+                        receiver_list.append(recip.Address)
+
+                    if len(message.Attachments) == 0 or email not in receiver_list:
+                        if message.UnRead is True:
+                            unprocessed_email_unread += 1
+                        else:
+                            unprocessed_email_read += 1
+                        continue
 
                     if indx_msg == 0:
                         try:
@@ -245,18 +255,26 @@ def download_attachments(path_name, date_today, status, date_and_time):  # pylin
                 print("Error when processing emails messages:" +
                       str(exception_error))
 
-            if first_email == "" and last_email == "":
-                pass
-            else:
-                data_list = [each_folder.name,
-                             path_original_name,
-                             email_with_invoice,
-                             attachment_count,
-                             date_today,
-                             first_email,
-                             last_email,
-                             unprocessed_email]
-                save_csv_or_excel(date_and_time, data_list)
+            # if first_email == "" and last_email == "":
+            #     data_list = [each_folder.name,
+            #                  path_original_name,
+            #                  email_with_invoice,
+            #                  attachment_count,
+            #                  date_today,
+            #                  first_email,
+            #                  last_email,
+            #                  unprocessed_email]
+            # else:
+            data_list = [each_folder.name,
+                         path_original_name,
+                         email_with_invoice,
+                         attachment_count,
+                         date_today,
+                         first_email,
+                         last_email,
+                         unprocessed_email_read,
+                         unprocessed_email_unread]
+            save_csv_or_excel(date_and_time, data_list)
 
             # MAIN_LIST.append([date_and_time, each_folder.name,
             #                  total_messages, total_attachments])
@@ -292,7 +310,8 @@ def main():
                       'Execution Date',
                       'First Email Details',
                       'Last Email Details',
-                      'Unprocessed Emails'])
+                      'Unprocessed Read Emails',
+                      'Unprocessed UnRead Emails'])
 
     # try:
     download_attachments(path_name_modified, date_today,
